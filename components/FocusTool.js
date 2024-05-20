@@ -30,16 +30,20 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping }) => {
   };
 
   const handleFocusEvent = useCallback((key) => {
-    if (cardRefs.current[inputToCardMapping[key]]) {
-      cardRefs.current[inputToCardMapping[key]].style.opacity = 1;
-    }
+    Object.keys(cardRefs.current).forEach((cardKey) => {
+      if (cardRefs.current[cardKey]) {
+        cardRefs.current[cardKey].style.opacity = cardKey === inputToCardMapping[key] ? 1 : 0.5;
+      }
+    });
   }, [inputToCardMapping]);
 
-  const handleBlurEvent = useCallback((key) => {
-    if (cardRefs.current[inputToCardMapping[key]]) {
-      cardRefs.current[inputToCardMapping[key]].style.opacity = 1; // Reset opacity to normal on blur
-    }
-  }, [inputToCardMapping]);
+  const handleBlurEvent = useCallback(() => {
+    Object.keys(cardRefs.current).forEach((cardKey) => {
+      if (cardRefs.current[cardKey]) {
+        cardRefs.current[cardKey].style.opacity = 1; // Reset opacity to normal on blur
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const currentInputRefs = inputRefs.current;
@@ -51,7 +55,7 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping }) => {
     Object.keys(inputToCardMapping).forEach((key) => {
       if (currentInputRefs[key] && currentCardRefs[inputToCardMapping[key]]) {
         focusHandlers[key] = () => handleFocusEvent(key);
-        blurHandlers[key] = () => handleBlurEvent(key);
+        blurHandlers[key] = () => handleBlurEvent();
         currentInputRefs[key].addEventListener('focus', focusHandlers[key]);
         currentInputRefs[key].addEventListener('blur', blurHandlers[key]);
       }
