@@ -58,7 +58,10 @@ const CollapsibleForm = ({ inputRefs }) => {
               name="textInput"
               value={formData.textInput || ''}
               onChange={handleInputChange}
-              ref={(el) => (inputRefs.current.textInput = el)}
+              ref={(el) => {
+                console.log('Assigning ref for textInput:', el);
+                inputRefs.current.textInput = el;
+              }}
             />
           </FormSection>
         </Collapse>
@@ -69,7 +72,10 @@ const CollapsibleForm = ({ inputRefs }) => {
               type="file"
               name="fileInput"
               onChange={handleInputChange}
-              ref={(el) => (inputRefs.current.fileInput = el)}
+              ref={(el) => {
+                console.log('Assigning ref for fileInput:', el);
+                inputRefs.current.fileInput = el;
+              }}
             />
           </FormSection>
         </Collapse>
@@ -80,7 +86,10 @@ const CollapsibleForm = ({ inputRefs }) => {
               name="selectInput"
               value={formData.selectInput || ''}
               onChange={handleInputChange}
-              ref={(el) => (inputRefs.current.selectInput = el)}
+              ref={(el) => {
+                console.log('Assigning ref for selectInput:', el);
+                inputRefs.current.selectInput = el;
+              }}
             >
               <option value="">Select an option</option>
               <option value="option1">Option 1</option>
