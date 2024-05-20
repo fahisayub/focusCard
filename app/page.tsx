@@ -7,11 +7,19 @@ import FocusTool from "../components/FocusTool";
 import { useRef } from 'react';
 
 export default function Home() {
-  const inputRefs = useRef({});
+  const inputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const inputToCardMapping = {
     textInput: 'textDiv',
     fileInput: 'fileDiv',
     selectInput: 'selectDiv',
+  };
+
+  // Handle card click to focus on the corresponding input field
+  const handleCardClick = (inputName: string) => {
+    if (inputRefs.current[inputName]) {
+      inputRefs.current[inputName]?.focus();
+    }
   };
 
   return (
