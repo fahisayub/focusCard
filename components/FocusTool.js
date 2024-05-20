@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { useFormStore } from './CollapsibleForm';
-import CollapsibleForm from './CollapsibleForm';
 import PropTypes from 'prop-types';
 
 // Styled components for focus tool layout
@@ -12,10 +11,13 @@ const FocusContainer = styled.div`
   align-items: center;
 `;
 
+// CSS classes for focused and unfocused states
+const focusedClass = 'focused';
+const unfocusedClass = 'unfocused';
+
 // Focus tool component
-const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping }) => {
+const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping, inputRefs }) => {
   const { formData } = useFormStore();
-  const inputRefs = useRef({});
   const cardRefs = useRef({});
 
   const handleFocus = (key) => {
@@ -33,8 +35,10 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping }) => {
     console.log(`handleFocusEvent triggered for key: ${key}`);
     Object.keys(cardRefs.current).forEach((cardKey) => {
       if (cardRefs.current[cardKey]) {
-        console.log(`Setting opacity for cardKey: ${cardKey}`);
-        cardRefs.current[cardKey].style.opacity = cardKey === inputToCardMapping[key] ? 1 : 0.5;
+        console.log(`Setting class for cardKey: ${cardKey}`);
+        cardRefs.current[cardKey].classList.toggle(focusedClass, cardKey === inputToCardMapping[key]);
+        cardRefs.current[cardKey].classList.toggle(unfocusedClass, cardKey !== inputToCardMapping[key]);
+        console.log(`Class list for cardKey ${cardKey}:`, cardRefs.current[cardKey].classList);
       }
     });
   }, [inputToCardMapping]);
@@ -43,8 +47,9 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping }) => {
     console.log('handleBlurEvent triggered');
     Object.keys(cardRefs.current).forEach((cardKey) => {
       if (cardRefs.current[cardKey]) {
-        console.log(`Resetting opacity for cardKey: ${cardKey}`);
-        cardRefs.current[cardKey].style.opacity = 1; // Reset opacity to normal on blur
+        console.log(`Resetting class for cardKey: ${cardKey}`);
+        cardRefs.current[cardKey].classList.remove(focusedClass, unfocusedClass); // Reset classes on blur
+        console.log(`Class list for cardKey ${cardKey} after reset:`, cardRefs.current[cardKey].classList);
       }
     });
   }, []);
@@ -56,15 +61,38 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping }) => {
     const focusHandlers = {};
     const blurHandlers = {};
 
-    Object.keys(inputToCardMapping).forEach((key) => {
-      if (currentInputRefs[key] && currentCardRefs[inputToCardMapping[key]]) {
-        console.log(`Adding event listeners for key: ${key}`);
-        focusHandlers[key] = () => handleFocusEvent(key);
-        blurHandlers[key] = () => handleBlurEvent();
-        currentInputRefs[key].addEventListener('focus', focusHandlers[key]);
-        currentInputRefs[key].addEventListener('blur', blurHandlers[key]);
-      }
-    });
+    const addEventListeners = () => {
+      Object.keys(inputToCardMapping).forEach((key) => {
+        if (currentInputRefs[key] && currentCardRefs[inputToCardMapping[key]]) {
+          console.log(`Adding event listeners for key: ${key}`);
+          focusHandlers[key] = () => handleFocusEvent(key);
+          blurHandlers[key] = () => handleBlurEvent();
+          currentInputRefs[key].addEventListener('focus', focusHandlers[key]);
+          currentInputRefs[key].addEventListener('blur', blurHandlers[key]);
+        }
+      });
+
+      // Log the contents of inputRefs and cardRefs for debugging
+      console.log('inputRefs:', inputRefs.current);
+      console.log('cardRefs:', cardRefs.current);
+      console.log('inputToCardMapping:', inputToCardMapping);
+    };
+
+    if (Object.keys(currentCardRefs).length === 0) {
+      // Set up a mutation observer to wait for card elements to be added to the DOM
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.addedNodes.length > 0) {
+            addEventListeners();
+            observer.disconnect();
+          }
+        });
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+    } else {
+      addEventListeners();
+    }
 
     // Cleanup event listeners on component unmount
     return () => {
@@ -76,11 +104,10 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping }) => {
         }
       });
     };
-  }, [formData, inputToCardMapping, handleFocusEvent, handleBlurEvent]);
+  }, [formData, inputToCardMapping, handleFocusEvent, handleBlurEvent, inputRefs]);
 
   return (
     <FocusContainer>
-      <CollapsibleForm inputRefs={inputRefs} />
       <CardComponent cardRefs={cardRefs} onCardClick={handleCardClick} />
     </FocusContainer>
   );
@@ -89,6 +116,7 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping }) => {
 FocusTool.propTypes = {
   cardComponent: PropTypes.elementType.isRequired,
   inputToCardMapping: PropTypes.objectOf(PropTypes.string).isRequired,
+  inputRefs: PropTypes.object.isRequired,
 };
 
 export default FocusTool;
