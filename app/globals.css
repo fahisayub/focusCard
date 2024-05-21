@@ -12,10 +12,8 @@ body {
 /* CSS classes for focused and unfocused states */
 .focused {
   opacity: 1;
-  border: 2px solid red; /* Temporary border for visual confirmation */
 }
 
 .unfocused {
   opacity: 0.5;
-  border: 2px solid blue; /* Temporary border for visual confirmation */
 }
