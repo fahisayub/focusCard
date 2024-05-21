@@ -69,6 +69,7 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping, inputRefs
           blurHandlers[key] = () => handleBlurEvent();
           currentInputRefs[key].addEventListener('focus', focusHandlers[key]);
           currentInputRefs[key].addEventListener('blur', blurHandlers[key]);
+          console.log(`Event listeners added for input key: ${key}`);
         }
       });
 
@@ -101,6 +102,7 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping, inputRefs
           console.log(`Removing event listeners for key: ${key}`);
           currentInputRefs[key].removeEventListener('focus', focusHandlers[key]);
           currentInputRefs[key].removeEventListener('blur', blurHandlers[key]);
+          console.log(`Event listeners removed for input key: ${key}`);
         }
       });
     };
