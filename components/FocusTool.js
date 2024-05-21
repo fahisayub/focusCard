@@ -28,6 +28,10 @@ const FocusTool = ({ cardComponent: CardComponent, inputToCardMapping, inputRefs
   };
 
   const handleCardClick = (key) => {
+    // Open the collapsible section if it is closed
+    if (inputRefs.current[key] && inputRefs.current[key].closest('.nextui-collapse').getAttribute('aria-expanded') === 'false') {
+      inputRefs.current[key].closest('.nextui-collapse').click();
+    }
     handleFocus(key);
   };
 
