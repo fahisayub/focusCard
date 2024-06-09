@@ -22,8 +22,8 @@ const FormElements = styled.div`
 const LeadGenSetupCollapse = forwardRef(({ setIsFlipped, isFlipped }, inputRefs) => {
     const gridRef = useRef(null);
     const [isTableExpand, setExpandTable] = useState(false);
-    const inputs: passInputProps = useAppStore(({ cardData }) => cardData as passInputProps);
-    const setInputs = useAppStore(({ setInitCard }) => setInitCard as (data: passInputProps) => Promise<any>);
+    const inputs = useAppStore(({ cardData }) => cardData);
+    const setInputs = useAppStore(({ setInitCard }) => setInitCard);
     const initialRows = inputs?.leadFormModule?.length || 0;
     const [numRows, setNumRows] = useState(initialRows);
     const isMobile = useIsMobile();
