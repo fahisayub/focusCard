@@ -2,6 +2,7 @@ import React from 'react';
 import { Collapse } from '@nextui-org/react';
 import styled from 'styled-components';
 import { create } from 'zustand';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 // Zustand store for form state management
 export const useFormStore = create((set) => ({
@@ -47,57 +48,81 @@ const CollapsibleForm = ({ inputRefs }) => {
     setFormData(name, value);
   };
 
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const items = Array.from(formData.leadFormModule);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setFormData('leadFormModule', items);
+  };
+
   return (
     <FormContainer>
-      <Collapse.Group>
-        <Collapse title="Section 1">
-          <FormSection>
-            <label>Text Input:</label>
-            <FormInput
-              type="text"
-              name="textInput"
-              value={formData.textInput || ''}
-              onChange={handleInputChange}
-              ref={(el) => {
-                console.log('Assigning ref for textInput:', el);
-                inputRefs.current.textInput = el;
-              }}
-            />
-          </FormSection>
-        </Collapse>
-        <Collapse title="Section 2">
-          <FormSection>
-            <label>File Input:</label>
-            <FormInput
-              type="file"
-              name="fileInput"
-              onChange={handleInputChange}
-              ref={(el) => {
-                console.log('Assigning ref for fileInput:', el);
-                inputRefs.current.fileInput = el;
-              }}
-            />
-          </FormSection>
-        </Collapse>
-        <Collapse title="Section 3">
-          <FormSection>
-            <label>Select Input:</label>
-            <FormSelect
-              name="selectInput"
-              value={formData.selectInput || ''}
-              onChange={handleInputChange}
-              ref={(el) => {
-                console.log('Assigning ref for selectInput:', el);
-                inputRefs.current.selectInput = el;
-              }}
-            >
-              <option value="">Select an option</option>
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-            </FormSelect>
-          </FormSection>
-        </Collapse>
-      </Collapse.Group>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="formSections">
+          {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef}>
+              <Collapse.Group>
+                {formData.leadFormModule?.map((item, index) => (
+                  <Draggable key={item.id} draggableId={item.id} index={index}>
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <Collapse title={`Section ${index + 1}`}>
+                          <FormSection>
+                            <label>{item.label}:</label>
+                            {item.type === 'text' && (
+                              <FormInput
+                                type="text"
+                                name={item.id}
+                                value={item.body || ''}
+                                onChange={handleInputChange}
+                                ref={(el) => {
+                                  inputRefs.current[item.id] = el;
+                                }}
+                              />
+                            )}
+                            {item.type === 'file' && (
+                              <FormInput
+                                type="file"
+                                name={item.id}
+                                onChange={handleInputChange}
+                                ref={(el) => {
+                                  inputRefs.current[item.id] = el;
+                                }}
+                              />
+                            )}
+                            {item.type === 'select' && (
+                              <FormSelect
+                                name={item.id}
+                                value={item.body || ''}
+                                onChange={handleInputChange}
+                                ref={(el) => {
+                                  inputRefs.current[item.id] = el;
+                                }}
+                              >
+                                <option value="">Select an option</option>
+                                <option value="option1">Option 1</option>
+                                <option value="option2">Option 2</option>
+                              </FormSelect>
+                            )}
+                          </FormSection>
+                        </Collapse>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </Collapse.Group>
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </FormContainer>
   );
 };
